@@ -397,7 +397,9 @@ class Script:
         self.device.release_during_wait()
         time.sleep(15)
         self.device.emulator_stop()
-        if not self.wait_until(next_run):
+        # 提前15秒结束等待，预留模拟器启动时间
+        target_time = next_run - timedelta(seconds=15)
+        if not self.wait_until(target_time):
             return False
         getattr(self.device, 'emulator_start')()
         time.sleep(15)
