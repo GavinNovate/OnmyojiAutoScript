@@ -36,6 +36,7 @@ from module.base.timer import Timer
 from module.logger import logger
 from module.exception import *
 from module.server.i18n import I18n
+from tasks.base_task import BaseTask
 
 
 
@@ -300,6 +301,44 @@ class Script:
             if self.config.should_reload():
                 return False
 
+    def wait_with_burst(self, future, interval_seconds: int = 30):
+        """
+        在等待期间定期截图，触发突发检测。
+
+        Args:
+            future (datetime):
+            interval_seconds (int): 截图触发间隔（秒）
+
+        Returns:
+            bool: True if wait finished, False if config changed.
+        """
+        future = future + timedelta(seconds=1)
+        self.config.start_watching()
+        interval_seconds = max(1, int(interval_seconds))
+        burst_task = BaseTask(config=self.config, device=self.device)
+        next_burst_time = datetime.now()
+
+        while 1:
+            now = datetime.now()
+            if now > future:
+                return True
+
+            if now >= next_burst_time:
+                burst_task.screenshot()
+                self.config.update_scheduler()
+                if self.config.pending_task:
+                    logger.info(f"Pending task detected during wait: {self.config.pending_task[0].command}, stop waiting early")
+                    return True
+                next_burst_time = now + timedelta(seconds=interval_seconds)
+
+            # 计算睡眠时间：最多5秒醒来一次检查条件，但不超过下次截图时间和目标等待时间
+            sleep_seconds = min(5, max(0.1, (next_burst_time - datetime.now()).total_seconds()))
+            sleep_seconds = min(sleep_seconds, max(0.1, (future - datetime.now()).total_seconds()))
+            time.sleep(sleep_seconds)
+
+            if self.config.should_reload():
+                return False
+
     def get_next_task(self) -> str:
         """
         获取下一个任务的名字, 大驼峰。
@@ -350,8 +389,7 @@ class Script:
     def _wait_goto_main(self, next_run: datetime) -> bool:
         logger.info("Goto main page during wait")
         self.run("GotoMain")
-        self.device.release_during_wait()
-        return self.wait_until(next_run)
+        return self.wait_with_burst(next_run, interval_seconds=30)
 
     def _wait_close_emulator(self, next_run: datetime) -> bool:
         logger.info("Close emulator during wait")
