@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import random
 import re
+from datetime import datetime, timedelta
 from module.atom.click import RuleClick
 from tasks.base_task import BaseTask
 from tasks.Component.GeneralBattle.general_battle import GeneralBattle
@@ -28,6 +29,22 @@ class ScriptTask(GeneralBattle, GameUi, SwitchSoul, AreaBossAssets):
         运行脚本
         :return:
         """
+        # 检查当前时间是否在地域鬼王活动窗口内(6:00-23:00)
+        current_hour = datetime.now().hour
+        if not (6 <= current_hour < 23):
+            logger.info(f"当前时间 {current_hour}:00 不在地域鬼王活动时间内(6:00-23:00)")
+            # 计算下次活动开始时间
+            if current_hour >= 23:
+                # 23点之后，下次是明天6点
+                next_time = (datetime.now() + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
+            else:
+                # 6点之前，下次是今天6点
+                next_time = datetime.now().replace(hour=6, minute=0, second=0, microsecond=0)
+            logger.info(f"已设置下次运行时间为: {next_time}")
+            # 设置下次运行时间
+            self.set_next_run(task='AreaBoss', success=True, finish=False, target=next_time)
+            raise TaskEnd("不在地域鬼王活动时间内，已跳过到下次活动时间")
+
         # 直接手动关闭这个锁定阵容的设置
         self.config.area_boss.general_battle.lock_team_enable = False
         con = self.config.area_boss.boss
