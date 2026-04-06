@@ -26,7 +26,17 @@ class ScriptTask(GameUi, WeeklyTriflesAssets):
         if con.broken_amulet:
             self._broken_amulet(con.broken_amulet)
 
-        self.set_next_run(task='WeeklyTrifles', success=True, finish=True)
+        scheduler = self.config.weekly_trifles.scheduler
+        if scheduler.next_run_weekdays and scheduler.next_run_weekdays.strip():
+            logger.info('使用周几调度逻辑设置下次运行时间')
+            self.custom_next_run_by_weekday(
+                task='WeeklyTrifles',
+                weekdays_str=scheduler.next_run_weekdays,
+                run_time=scheduler.next_run_time,
+                float_time=scheduler.float_time
+            )
+        else:
+            self.set_next_run(task='WeeklyTrifles', success=True, finish=True)
         raise TaskEnd('WeeklyTrifles')
 
 

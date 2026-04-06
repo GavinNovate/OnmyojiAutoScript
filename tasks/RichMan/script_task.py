@@ -29,7 +29,17 @@ class ScriptTask(Mall, Guild, ThousandThings, Shrine):
         # 商店
         self.execute_mall()
 
-        self.set_next_run(task='RichMan', success=True, finish=False)
+        scheduler = self.config.rich_man.scheduler
+        if scheduler.next_run_weekdays and scheduler.next_run_weekdays.strip():
+            logger.info('使用周几调度逻辑设置下次运行时间')
+            self.custom_next_run_by_weekday(
+                task='RichMan',
+                weekdays_str=scheduler.next_run_weekdays,
+                run_time=scheduler.next_run_time,
+                float_time=scheduler.float_time
+            )
+        else:
+            self.set_next_run(task='RichMan', success=True, finish=False)
 
         raise TaskEnd('RichMan')
 
