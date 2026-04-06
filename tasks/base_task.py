@@ -673,6 +673,136 @@ class BaseTask(GlobalGameAssets, CostumeBase):
                                                                             second=custom_time.second)
         self.set_next_run(task, target=target_time)
 
+    def custom_next_run_by_weekday(self, task: str, weekdays_str: str, run_time: Time, float_time: Time = None) -> None:
+        """
+        根据配置的周几和时间，计算并设置最近的一次运行时间
+        :param task: 任务名称，大驼峰的
+        :param weekdays_str: 允许的周几字符串，支持逗号、顿号分割，支持数字1-7（周一到周日）或中文"周一"到"周日"
+        :param run_time: 每天的运行时间
+        :param float_time: 手动指定浮动时间，server=False 时用于补充随机延迟
+        :return:
+        """
+        # 解析周几字符串
+        weekdays = self._parse_weekdays(weekdays_str)
+        
+        if not weekdays:
+            logger.warning(f'周几配置为空或格式不正确: {weekdays_str}，跳过周几调度逻辑')
+            return
+        
+        now = datetime.now()
+        
+        # 构建今天的run_time
+        today_target = now.replace(
+            hour=run_time.hour,
+            minute=run_time.minute,
+            second=run_time.second,
+            microsecond=0
+        )
+        
+        # 检查今天是否在允许的周几内
+        current_weekday = now.weekday()
+        
+        if current_weekday in weekdays:
+            # 今天是允许的周几
+            if now < today_target:
+                # 当前时间在今天的run_time之前
+                next_run = today_target
+                logger.info(f"今天是周{current_weekday + 1}，当前时间在 {run_time} 之前，下次运行: 今天 {run_time}")
+            else:
+                # 当前时间已经超过今天的run_time，找下一个允许的周几
+                days_to_add = 1
+                while True:
+                    next_weekday = (current_weekday + days_to_add) % 7
+                    if next_weekday in weekdays:
+                        break
+                    days_to_add += 1
+                
+                next_run = now + timedelta(days=days_to_add)
+                next_run = next_run.replace(
+                    hour=run_time.hour,
+                    minute=run_time.minute,
+                    second=run_time.second,
+                    microsecond=0
+                )
+                logger.info(f"今天是周{current_weekday + 1}，当前时间已超过 {run_time}，下次运行: 周{next_weekday + 1} {run_time}")
+        else:
+            # 今天不是允许的周几，找下一个允许的周几
+            days_to_add = 1
+            while True:
+                next_weekday = (current_weekday + days_to_add) % 7
+                if next_weekday in weekdays:
+                    break
+                days_to_add += 1
+            
+            next_run = now + timedelta(days=days_to_add)
+            next_run = next_run.replace(
+                hour=run_time.hour,
+                minute=run_time.minute,
+                second=run_time.second,
+                microsecond=0
+            )
+            logger.info(f"今天是周{current_weekday + 1}，不在允许周几内，下次运行: 周{next_weekday + 1} {run_time}")
+
+        # 手动加浮动时间（server=False 时不会自动处理）
+        if float_time:
+            float_seconds = (float_time.hour * 3600 +
+                             float_time.minute * 60 +
+                             float_time.second)
+            if float_seconds > 0:
+                random_float = random.randint(0, float_seconds)
+                next_run += timedelta(seconds=random_float)
+                logger.info(f'添加随机浮动时间: {random_float}秒，最终下次运行: {next_run}')
+
+        self.set_next_run(task, target=next_run, finish=True, server=False)
+    
+    def _parse_weekdays(self, weekdays_str: str) -> list:
+        """
+        解析周几字符串，返回周几列表（0=周一, 6=周日）
+        :param weekdays_str: 周几字符串，支持逗号、顿号分割，支持数字1-7或中文"周一"到"周日"
+        :return: 周几列表
+        """
+        if not weekdays_str or not weekdays_str.strip():
+            return []
+        
+        # 中文星期名称映射到数字（1=周一, 7=周日）
+        weekday_map = {
+            '周一': 1, '星期一': 1,
+            '周二': 2, '星期二': 2,
+            '周三': 3, '星期三': 3,
+            '周四': 4, '星期四': 4,
+            '周五': 5, '星期五': 5,
+            '周六': 6, '星期六': 6,
+            '周日': 7, '星期日': 7
+        }
+        
+        # 使用中英文逗号和顿号分割
+        separators = [',', '，', '、', ';', '；']
+        items = [weekdays_str]
+        for sep in separators:
+            new_items = []
+            for item in items:
+                new_items.extend(item.split(sep))
+            items = new_items
+        
+        weekdays = []
+        for item in items:
+            item = item.strip()
+            if not item:
+                continue
+            
+            # 尝试解析为数字
+            if item.isdigit():
+                num = int(item)
+                if 1 <= num <= 7:
+                    weekdays.append(num - 1)  # 转换为0-6
+            # 尝试解析为中文
+            elif item in weekday_map:
+                weekdays.append(weekday_map[item] - 1)  # 转换为0-6
+            else:
+                logger.warning(f'无法识别的周几格式: {item}')
+        
+        return weekdays
+
     #  ---------------------------------------------------------------------------------------------------------------
     #
     #  ---------------------------------------------------------------------------------------------------------------

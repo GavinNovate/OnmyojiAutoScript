@@ -141,7 +141,21 @@ class ScriptTask(GameUi, GeneralBattle, SwitchSoul, SecretAssets):
             if con.secret_gold_100:
                 self.gold_100(False)
             self.close_buff()
-        self.set_next_run(task='Secret', success=True, finish=True)
+
+        # 检查是否启用了周几调度功能
+        scheduler = self.config.secret.scheduler
+        if scheduler.next_run_weekdays and scheduler.next_run_weekdays.strip():
+            # 配置了周几调度，使用周几调度逻辑
+            logger.info('使用周几调度逻辑设置下次运行时间')
+            self.custom_next_run_by_weekday(
+                task='Secret',
+                weekdays_str=scheduler.next_run_weekdays,
+                run_time=scheduler.next_run_time,
+                float_time=scheduler.float_time
+            )
+        else:
+            # 未配置周几调度，使用原有逻辑
+            self.set_next_run(task='Secret', success=True, finish=True)
         raise TaskEnd('Secret')
 
     def find_battle(self, screenshot: bool = False) -> int or None:
