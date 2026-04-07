@@ -731,6 +731,8 @@ Refresh：直接刷新，如果刷新操作进入CD，将标记为失败并退�
 	<message><source>strange_trace_help</source><translation>100体力->金币九万八</translation></message>
 	<message><source>Miyoshino Painting</source><translation>弥助的画</translation></message>	
 	<message><source>miyoshino_painting_help</source><translation>300体力->六星变异卡</translation></message>
+	<message><source>Fish Gift</source><translation>以鱼为礼</translation></message>	
+	<message><source>fish_gift_help</source><translation>200体力->四星变异卡</translation></message>
 	<message><source>WantedQuestsConfig</source><translation>悬赏</translation></message>
 	<message><source>Before End</source><translation>强制设定悬赏刷新前 X 分钟执行</translation></message>
 	<message><source>before_end_help</source><translation>默认'00:00:00'表示不使用这个功能，不可取负值，建议最后一小时才执行悬赏'01:00:00'</translation></message>

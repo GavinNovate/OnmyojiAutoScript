@@ -23,6 +23,8 @@ class ScriptTask(GameUi, DelegationAssets):
         con: DelegationConfig = self.config.delegation.delegation_config
         if con.miyoshino_painting:
             self.delegate_one('画')
+        if con.fish_gift:
+            self.delegate_one('以鱼')
         if con.bird_feather:
             self.delegate_one('鸟羽')
         if con.find_earring:

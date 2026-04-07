@@ -9,6 +9,8 @@ from tasks.Component.config_base import ConfigBase, TimeDelta
 class DelegationConfig(ConfigBase):
     # 弥助的画-300-六星变异卡
     miyoshino_painting: bool = Field(default=False, description='miyoshino_painting_help')
+    # 以鱼为礼-200-四星变异卡
+    fish_gift: bool = Field(default=False, description='fish_gift_help')
     # 鸟之羽-50-20片大蛇的逆鳞
     bird_feather: bool = Field(default=False, description='bird_feather_help')
     # 寻找耳环-300-金币28万
