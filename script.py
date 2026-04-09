@@ -317,6 +317,8 @@ class Script:
         interval_seconds = max(1, int(interval_seconds))
         burst_task = BaseTask(config=self.config, device=self.device)
         next_burst_time = datetime.now()
+        # 清空卡死检测记录，避免之前的操作影响等待期间的检测
+        self.device.stuck_record_clear()
 
         while 1:
             now = datetime.now()
@@ -324,7 +326,11 @@ class Script:
                 return True
 
             if now >= next_burst_time:
+                # screenshot() 内部先执行 stuck_record_check，先清理可避免空闲等待误触发超时
+                self.device.stuck_record_clear()
                 burst_task.screenshot()
+                # burst 检测后再次清理，避免检测过程污染后续空闲等待
+                self.device.stuck_record_clear()
                 self.config.update_scheduler()
                 if self.config.pending_task:
                     logger.info(f"Pending task detected during wait: {self.config.pending_task[0].command}, stop waiting early")
