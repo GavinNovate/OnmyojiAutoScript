@@ -29,8 +29,10 @@ class EvoZoneAssets:
 	I_WIND_KIRIN = RuleImage(roi_front=(377,126,232,420), roi_back=(377,126,232,420), threshold=0.8, method="Template matching", file="./tasks/EvoZone/o/o_wind_kirin.png")
 	# 水麒麟进入 
 	I_WATER_KIRIN = RuleImage(roi_front=(671,122,236,420), roi_back=(671,122,236,420), threshold=0.8, method="Template matching", file="./tasks/EvoZone/o/o_water_kirin.png")
-	# 雷麒麟进入 
+	# 雷麒麟进入
 	I_LIGHTNING_KIRIN = RuleImage(roi_front=(967,121,239,419), roi_back=(967,121,239,419), threshold=0.8, method="Template matching", file="./tasks/EvoZone/o/o_lightning_kirin.png")
+	# 协战按钮
+	I_FRIEND_BATTLE_BUTTON = RuleImage(roi_front=(1190,520,65,110), roi_back=(1190,520,65,110), threshold=0.8, method="Template matching", file="./tasks/EvoZone/o/o_friend_battle_button.png")
 
 
 	# List Rule Assets
@@ -40,7 +42,9 @@ class EvoZoneAssets:
 
 
 	# Ocr Rule Assets
-	# Ocr-description 
+	# Ocr-description
 	O_O_TEST_OCR = RuleOcr(roi=(126,136,360,491), area=(126,136,360,491), mode="Full", method="Default", keyword="", name="o_test_ocr")
+	# 协战次数识别区域
+	O_FRIEND_BATTLE_COUNT = RuleOcr(roi=(775,160,165,30), area=(775,160,165,30), mode="Full", method="Default", keyword="", name="friend_battle_count")
 
 

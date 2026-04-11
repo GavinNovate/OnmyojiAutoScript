@@ -357,9 +357,10 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
             # 进入好友界面
             logger.info('进入好友界面')
             self.ui_goto(page_friends)
-            
+
             # 查找并点击协战按钮
             logger.info('查找协战按钮')
+            self.screenshot()
             if self.appear_then_click(self.I_FRIEND_BATTLE_BUTTON, interval=1):
                 logger.info('成功找到并点击协战按钮')
                 sleep(1)  # 等待界面加载
