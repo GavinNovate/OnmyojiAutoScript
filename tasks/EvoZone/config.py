@@ -50,6 +50,8 @@ class EvoZoneConfig(ConfigBase):
     limit_count: int = Field(default=30, description='limit_count_help')
     # 是否开启觉醒加成
     soul_buff_enable: bool = Field(default=False, description='是否开启觉醒加成')
+    # 是否不超过协战次数
+    limit_by_friend_battle: bool = Field(default=False, description='是否不超过协战次数')
 
 class EvoZone(ConfigBase):
     scheduler: Scheduler = Field(default_factory=Scheduler)

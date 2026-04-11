@@ -88,5 +88,25 @@
     "method": "Template matching",
     "threshold": 0.8,
     "description": "雷麒麟进入"
+  },
+  {
+    "itemName": "friend_battle_button",
+    "imageName": "o_friend_battle_button.png",
+    "roiFront": "1190,520,65,110",
+    "roiBack": "1190,520,65,110",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "description": "协战按钮"
+  },
+  {
+    "itemName": "friend_battle_count",
+    "imageName": "",
+    "roi": "775,160,165,30",
+    "area": "775,160,165,30",
+    "mode": "Full",
+    "method": "Default",
+    "keyword": "",
+    "name": "friend_battle_count",
+    "description": "协战次数识别区域"
   }
 ]

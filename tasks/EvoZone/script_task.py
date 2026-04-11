@@ -15,6 +15,7 @@ from tasks.EvoZone.assets import EvoZoneAssets
 from tasks.EvoZone.config import EvoZone, UserStatus, KirinType
 from module.logger import logger
 from module.exception import TaskEnd
+from tasks.GameUi.page import page_friends
 
 
 class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi, EvoZoneAssets, SwitchSoul):
@@ -28,6 +29,20 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
         self.limit_time: timedelta = timedelta(hours=limit_time.hour, minutes=limit_time.minute,
                                                seconds=limit_time.second)
         con = self.config.evo_zone
+
+        # 检查协战次数限制（在御魂切换之前，如果协战次数为0则直接跳过）
+        if con.evo_zone_config.limit_by_friend_battle:
+            logger.info('已启用协战次数限制')
+            friend_count = self.check_friend_battle_count()
+            if friend_count == 0:
+                logger.info('当前协战次数为0，跳过任务')
+                self.set_next_run('EvoZone', finish=True, success=True)
+                raise TaskEnd
+            else:
+                # 将协战次数作为运行次数限制
+                self.limit_count = min(self.limit_count, friend_count)
+                logger.info('将运行次数限制调整为: %d', self.limit_count)
+
         if con.switch_soul_config.enable:
             self.ui_get_current_page()
             self.ui_goto(page_shikigami_records)
@@ -327,6 +342,107 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
         logger.error('Wild mode is not implemented')
         pass
 
+    def check_friend_battle_count(self) -> int:
+        """
+        检测当前可用的协战次数
+        :return: 可用协战次数，如果检测失败返回0
+        """
+        logger.info('开始检测协战次数')
+        
+        try:
+            # 从当前位置导航到主页
+            self.ui_get_current_page()
+            self.ui_goto(page_main)
+            
+            # 进入好友界面
+            logger.info('进入好友界面')
+            self.ui_goto(page_friends)
+            
+            # 查找并点击协战按钮
+            logger.info('查找协战按钮')
+            if self.appear_then_click(self.I_FRIEND_BATTLE_BUTTON, interval=1):
+                logger.info('成功找到并点击协战按钮')
+                sleep(1)  # 等待界面加载
+                
+                # OCR识别协战次数
+                friend_count = self.ocr_friend_battle_count()
+                logger.info('检测到的协战次数: %d', friend_count)
+                
+                # 返回主页
+                logger.info('返回主页')
+                self.ui_goto(page_main)
+                
+                return friend_count
+            else:
+                logger.warning('未找到协战按钮')
+                
+        except Exception as e:
+            logger.error('检测协战次数失败: %s', str(e))
+        
+        # 检测失败，确保返回主页
+        logger.warning('协战次数检测失败，返回默认值 0')
+        try:
+            self.ui_get_current_page()
+            self.ui_goto(page_main)
+        except Exception:
+            pass
+        return 0
+
+    def ocr_friend_battle_count(self) -> int:
+        """
+        OCR识别协战次数
+        :return: 协战次数，识别失败返回0
+        """
+        import re
+
+        logger.info('开始OCR识别协战次数')
+        max_retry = 3
+
+        for attempt in range(max_retry):
+            try:
+                # 先截图获取最新图像
+                self.screenshot()
+
+                # 使用OCR识别指定区域
+                ocr_result = self.O_FRIEND_BATTLE_COUNT.ocr(self.device.image)
+                logger.info('第%d次OCR识别结果: %s', attempt + 1, str(ocr_result))
+
+                # 如果OCR识别成功
+                if ocr_result and ocr_result != (0, 0, 0, 0):
+                    # 获取识别的文本内容
+                    # 这里需要根据实际OCR返回的格式来调整
+                    # 假设返回的是文本字符串
+                    if isinstance(ocr_result, str):
+                        # 使用正则表达式提取数字
+                        # 匹配格式: 普通副本XX/15
+                        match = re.search(r'普通副本(\d+)/15', ocr_result)
+                        if match:
+                            used_count = int(match.group(1))
+                            # 验证数值是否在0-15之间
+                            if 0 <= used_count <= 15:
+                                available_count = 15 - used_count
+                                logger.info('已使用协战次数: %d, 剩余可用: %d', used_count, available_count)
+                                return available_count
+                            else:
+                                logger.warning('协战次数超出合理范围: %d', used_count)
+                        else:
+                            logger.warning('无法从OCR结果中提取数字: %s', ocr_result)
+                    else:
+                        logger.warning('OCR返回格式不是字符串: %s', type(ocr_result))
+                else:
+                    logger.warning('OCR识别失败或返回空结果')
+
+                # 如果不是最后一次重试，等待一下再试
+                if attempt < max_retry - 1:
+                    sleep(1)
+
+            except Exception as e:
+                logger.error('第%d次OCR识别协战次数异常: %s', attempt + 1, str(e))
+                if attempt < max_retry - 1:
+                    sleep(1)
+
+        logger.warning('OCR识别协战次数失败，已重试%d次', max_retry)
+        return 0
 
 if __name__ == '__main__':
     from module.config.config import Config
