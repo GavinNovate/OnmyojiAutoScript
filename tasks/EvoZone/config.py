@@ -42,6 +42,8 @@ class EvoZoneConfig(ConfigBase):
     user_status: UserStatus = Field(default=UserStatus.LEADER, description='user_status_help')
     # 类型
     kirin_type: KirinType = Field(default=KirinType.LIGHTNINGKIRIN, description='kirin_type_help')
+    # 是否随机麒麟类型
+    random_kirin_type: bool = Field(default=False, description='是否随机麒麟类型')
     # 层数
     layer: Layer = Field(default=Layer.TEN, description='layer_help')
     # 限制时间

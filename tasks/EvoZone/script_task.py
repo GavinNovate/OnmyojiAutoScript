@@ -3,6 +3,7 @@
 # github https://github.com/runhey
 from time import sleep
 from datetime import time, datetime, timedelta
+import random
 
 from tasks.Component.GeneralBattle.general_battle import GeneralBattle
 from tasks.Component.GeneralInvite.general_invite import GeneralInvite
@@ -88,8 +89,17 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
 
     def evozone_enter(self) -> bool:
         logger.info('Enter evozone')
+        # 如果启用随机麒麟类型，则在火、风、水、雷中随机选择
+        if self.config.evo_zone.evo_zone_config.random_kirin_type:
+            kirin_types = [KirinType.FIREKIRIN, KirinType.WINDKIRIN, KirinType.WATERKIRIN, KirinType.LIGHTNINGKIRIN]
+            selected_kirin_type = random.choice(kirin_types)
+            logger.info('随机选择的麒麟类型: %s', selected_kirin_type.value)
+        else:
+            selected_kirin_type = self.config.evo_zone.evo_zone_config.kirin_type
+            logger.info('使用的麒麟类型: %s', selected_kirin_type.value)
+
         kirintype = self.I_LIGHTNING_KIRIN
-        match self.config.evo_zone.evo_zone_config.kirin_type:
+        match selected_kirin_type:
             case KirinType.FIREKIRIN:
                 kirintype = self.I_FIRE_KIRIN
             case KirinType.WINDKIRIN:
