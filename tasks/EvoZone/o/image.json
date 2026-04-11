@@ -103,7 +103,7 @@
     "imageName": "",
     "roi": "775,160,165,30",
     "area": "775,160,165,30",
-    "mode": "Full",
+    "mode": "DigitCounter",
     "method": "Default",
     "keyword": "",
     "name": "friend_battle_count",

@@ -394,8 +394,6 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
         OCR识别协战次数
         :return: 协战次数，识别失败返回0
         """
-        import re
-
         logger.info('开始OCR识别协战次数')
         max_retry = 3
 
@@ -404,32 +402,20 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
                 # 先截图获取最新图像
                 self.screenshot()
 
-                # 使用OCR识别指定区域
+                # 使用OCR识别指定区域，DigitCounter模式返回 (current, remaining, total)
                 ocr_result = self.O_FRIEND_BATTLE_COUNT.ocr(self.device.image)
                 logger.info('第%d次OCR识别结果: %s', attempt + 1, str(ocr_result))
 
-                # 如果OCR识别成功
-                if ocr_result and ocr_result != (0, 0, 0, 0):
-                    # 获取识别的文本内容
-                    # 这里需要根据实际OCR返回的格式来调整
-                    # 假设返回的是文本字符串
-                    if isinstance(ocr_result, str):
-                        # 使用正则表达式提取数字
-                        # 匹配格式: 普通副本XX/15
-                        match = re.search(r'普通副本(\d+)/15', ocr_result)
-                        if match:
-                            used_count = int(match.group(1))
-                            # 验证数值是否在0-15之间
-                            if 0 <= used_count <= 15:
-                                available_count = 15 - used_count
-                                logger.info('已使用协战次数: %d, 剩余可用: %d', used_count, available_count)
-                                return available_count
-                            else:
-                                logger.warning('协战次数超出合理范围: %d', used_count)
-                        else:
-                            logger.warning('无法从OCR结果中提取数字: %s', ocr_result)
+                # 如果OCR识别成功，ocr_result 是 (used_count, available_count, total_count)
+                if ocr_result and ocr_result != (0, 0, 0):
+                    used_count, available_count, total_count = ocr_result
+
+                    # 验证数值是否在合理范围内
+                    if 0 <= used_count <= 15 and 0 <= available_count <= 15 and total_count == 15:
+                        logger.info('已使用协战次数: %d, 剩余可用: %d, 总计: %d', used_count, available_count, total_count)
+                        return available_count
                     else:
-                        logger.warning('OCR返回格式不是字符串: %s', type(ocr_result))
+                        logger.warning('协战次数超出合理范围: used=%d, available=%d, total=%d', used_count, available_count, total_count)
                 else:
                     logger.warning('OCR识别失败或返回空结果')
 

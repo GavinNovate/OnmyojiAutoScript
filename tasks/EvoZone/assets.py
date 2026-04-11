@@ -45,6 +45,6 @@ class EvoZoneAssets:
 	# Ocr-description
 	O_O_TEST_OCR = RuleOcr(roi=(126,136,360,491), area=(126,136,360,491), mode="Full", method="Default", keyword="", name="o_test_ocr")
 	# 协战次数识别区域
-	O_FRIEND_BATTLE_COUNT = RuleOcr(roi=(775,160,165,30), area=(775,160,165,30), mode="Full", method="Default", keyword="", name="friend_battle_count")
+	O_FRIEND_BATTLE_COUNT = RuleOcr(roi=(775,160,165,30), area=(775,160,165,30), mode="DigitCounter", method="Default", keyword="", name="friend_battle_count")
 
 
