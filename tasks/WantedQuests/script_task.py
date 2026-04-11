@@ -389,6 +389,10 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
             if info_wq:
                 info_wq_list.append(info_wq)
         info_wq_list = [item for item in info_wq_list if item not in self.want_strategy_excluding]
+        # 如果挑战券为0，过滤掉挑战类型任务
+        if num_challenge == 0:
+            info_wq_list = [item for item in info_wq_list if item[5] != '挑战']
+            logger.info('No challenge tickets available, skipping challenge quests')
         if not info_wq_list:
             logger.warning('No wanted quests can be challenged')
             self.ui_click(self.I_TRACE_TRUE, self.I_TRACE_FALSE)
