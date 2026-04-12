@@ -47,6 +47,9 @@ oas-backend.bat
 *.code-workspace
 .codebuddy
 
+# launcher 本地账号列表（不提交）
+config/launcher.txt
+
 
 
 
