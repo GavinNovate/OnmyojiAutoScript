@@ -1,5 +1,6 @@
 @echo off
 setlocal
+chcp 65001 >nul
 cd /d "%~dp0"
 
 set "SERVER_TEST_URL=http://127.0.0.1:22288/test"
@@ -20,8 +21,8 @@ if %errorlevel%==0 (
         exit /b 1
     )
 
-    echo 等待 5 秒让 server 初始化...
-    timeout /t 5 /nobreak >nul
+    echo 等待 60 秒让 server 初始化...
+    timeout /t 60 /nobreak >nul
 )
 
 echo [2/3] 启动 launcher.py...
