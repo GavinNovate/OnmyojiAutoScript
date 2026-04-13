@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
+from urllib.parse import quote
 
 
 API_BASE = "http://127.0.0.1:22288"
@@ -61,8 +62,9 @@ def wait_server_ready(timeout_seconds: int) -> bool:
 
 
 def start_config(name: str) -> bool:
+    encoded_name = quote(name, safe="")
     try:
-        with urlopen(f"{API_BASE}/{name}/start", timeout=8) as resp:
+        with urlopen(f"{API_BASE}/{encoded_name}/start", timeout=8) as resp:
             return resp.status == 200
     except (URLError, HTTPError, TimeoutError):
         return False
