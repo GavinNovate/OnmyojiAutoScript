@@ -21,11 +21,38 @@
     "itemName": "prepare_highlight",
     "imageName": "gb_prepare_highlight.png",
     "roiFront": "1128,536,100,100",
-    "roiBack": "1110,500,169,200",
+    "roiBack": "1120,525,120,120",
     "method": "Template matching",
-    "threshold": 0.8,
+    "threshold": 0.75,
     "description": "准备"
   },
+  {
+    "itemName": "prepare_highlight_1",
+    "imageName": "gb_prepare_highlight_1.png",
+    "roiFront": "1130,550,100,75",
+    "roiBack": "1120,525,120,120",
+    "method": "Template matching",
+    "threshold": 0.75,
+    "description": "准备-动画补充1"
+  },
+  {
+    "itemName": "prepare_highlight_2",
+    "imageName": "gb_prepare_highlight_2.png",
+    "roiFront": "1130,550,100,75",
+    "roiBack": "1120,525,120,120",
+    "method": "Template matching",
+    "threshold": 0.75,
+    "description": "准备-动画补充2"
+  },
+  {
+    "itemName": "prepare_highlight_3",
+    "imageName": "gb_prepare_highlight_3.png",
+    "roiFront": "1130,550,100,75",
+    "roiBack": "1120,525,120,120",
+    "method": "Template matching",
+    "threshold": 0.75,
+    "description": "准备-动画补充3"
+  }
   {
     "itemName": "win",
     "imageName": "gb_win.png",
