@@ -69,7 +69,12 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
                         self.check_and_open_buff(buff)
                         confed = True
                 # 点击准备(锁定阵容自动点准备,不锁定阵容前面也已经配置完毕需要点准备)
-                if self.appear_then_click(self.I_PREPARE_HIGHLIGHT, interval=0.8):
+                if (
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT, interval=0.8) or
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT_1, interval=0.8) or
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT_2, interval=0.8) or
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT_3, interval=0.8)
+                ):
                     continue
                 continue
             # 未知界面, 既不是准备界面也不是战斗界面
@@ -86,14 +91,27 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
         # 如果没有锁定队伍那么在点击准备后才退出的,退四的话就直接退出
         if not config.lock_team_enable and not exit_four:
             # 点击准备按钮
-            self.wait_until_appear(self.I_PREPARE_HIGHLIGHT)
             while 1:
                 self.screenshot()
-                if self.appear_then_click(self.I_PREPARE_HIGHLIGHT, interval=1.5):
+                if (
+                    self.appear(self.I_PREPARE_HIGHLIGHT) or
+                    self.appear(self.I_PREPARE_HIGHLIGHT_1) or
+                    self.appear(self.I_PREPARE_HIGHLIGHT_2) or
+                    self.appear(self.I_PREPARE_HIGHLIGHT_3)
+                ):
+                    break
+            while 1:
+                self.screenshot()
+                if (
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT, interval=1.5) or
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT_1, interval=1.5) or
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT_2, interval=1.5) or
+                    self.appear_then_click(self.I_PREPARE_HIGHLIGHT_3, interval=1.5)
+                ):
                     continue
                 if not (self.appear(self.I_PRESET) or self.appear(self.I_PRESET_WIT_NUMBER)):
                     break
-            logger.info(f"Click {self.I_PREPARE_HIGHLIGHT.name}")
+            logger.info("Click prepare_highlight")
 
         # 点击返回
         while 1:
@@ -283,7 +301,12 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
             # 等待那个准备的消失
             while 1:
                 self.screenshot()
-                if not self.appear(self.I_PREPARE_HIGHLIGHT):
+                if not (
+                    self.appear(self.I_PREPARE_HIGHLIGHT) or
+                    self.appear(self.I_PREPARE_HIGHLIGHT_1) or
+                    self.appear(self.I_PREPARE_HIGHLIGHT_2) or
+                    self.appear(self.I_PREPARE_HIGHLIGHT_3)
+                ):
                     break
 
             # 判断有无坐标的偏移
@@ -449,7 +472,12 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
             self.screenshot()
         if self.appear(self.I_BUFF):
             return True
-        elif self.appear(self.I_PREPARE_HIGHLIGHT):
+        elif (
+            self.appear(self.I_PREPARE_HIGHLIGHT) or
+            self.appear(self.I_PREPARE_HIGHLIGHT_1) or
+            self.appear(self.I_PREPARE_HIGHLIGHT_2) or
+            self.appear(self.I_PREPARE_HIGHLIGHT_3)
+        ):
             return True
         elif self.appear(self.I_PREPARE_DARK):
             return True
