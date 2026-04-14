@@ -112,6 +112,8 @@ class WantedQuestsConfig(BaseModel):
     unwanted_boss_names: str = Field(default='酒吞童子,阎魔', description='unwanted_boss_name_help')
     # 秘闻层数限制，默认值为7
     layer_limit: LayerLimit = Field(default=LayerLimit.LAYER_7, description='X层及以上不打')
+    # 特定秘闻的层数限制，例如"安梦奇缘·伍,姑获鸟·柒"，表示该秘闻从配置的层开始不打
+    special_layer_limit: str = Field(default='', description='特定秘闻的层数限制，多个用逗号分隔，格式为"秘闻名称·起始层"')
 
 
 class WantedQuests(ConfigBase):

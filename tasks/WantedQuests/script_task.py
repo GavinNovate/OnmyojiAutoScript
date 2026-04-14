@@ -352,6 +352,27 @@ class ScriptTask(WQExplore, SecretScriptTask, WantedQuestsAssets):
             if wq_destination[-1] in layer_limit:
                 logger.warning('This secret layer is too high')
                 return None
+
+            # 特定秘闻的层数限制
+            special_limit_str = self.config.model.wanted_quests.wanted_quests_config.special_layer_limit
+            if special_limit_str:
+                special_limits = [item.strip() for item in special_limit_str.split(',') if item.strip()]
+                for limit in special_limits:
+                    if '·' in limit:
+                        name_prefix, start_layer = limit.rsplit('·', 1)
+                        # 匹配前缀
+                        if wq_destination.startswith(name_prefix):
+                            # 获取当前层数
+                            current_layer = wq_destination[-1]
+                            # 比较层数（使用前面定义的 all_layers）
+                            try:
+                                if all_layers.index(current_layer) >= all_layers.index(start_layer):
+                                    logger.warning(f'Secret {wq_destination} is excluded by special_layer_limit: {limit}')
+                                    return None
+                            except ValueError:
+                                # 层数不在枚举中，忽略
+                                pass
+
             result[1] = wq_destination
             result[2] = wq_number
             order_list = self.config.model.wanted_quests.wanted_quests_config.battle_priority
