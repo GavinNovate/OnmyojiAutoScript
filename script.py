@@ -385,6 +385,10 @@ class Script:
 
     def _wait_close_game(self, next_run: datetime) -> bool:
         logger.info("Close game during wait")
+        # 如果device还未初始化，说明模拟器没启动，不需要关闭游戏
+        if not has_cached_property(self, 'device'):
+            logger.info("Device not initialized, skip close game, just wait")
+            return self.wait_until(next_run)
         self.device.app_stop()
         self.device.release_during_wait()
         if not self.wait_until(next_run):
@@ -394,11 +398,22 @@ class Script:
 
     def _wait_goto_main(self, next_run: datetime) -> bool:
         logger.info("Goto main page during wait")
+        # 如果device还未初始化，说明模拟器没启动，不能执行GotoMain
+        # 改为简单等待，不访问device
+        if not has_cached_property(self, 'device'):
+            logger.info("Device not initialized, cannot goto main, just wait")
+            return self.wait_until(next_run)
         self.run("GotoMain")
         return self.wait_with_burst(next_run, interval_seconds=30)
 
     def _wait_close_emulator(self, next_run: datetime) -> bool:
         logger.info("Close emulator during wait")
+        # 如果device还未初始化，说明模拟器没启动，不需要关闭
+        if not has_cached_property(self, 'device'):
+            logger.info("Device not initialized, emulator not running, just wait")
+            # 提前15秒结束等待，预留模拟器启动时间
+            target_time = next_run - timedelta(seconds=15)
+            return self.wait_until(target_time)
         self.device.app_stop()
         self.device.release_during_wait()
         time.sleep(15)
@@ -427,7 +442,9 @@ class Script:
 
     def _wait_stay_there(self, next_run: datetime) -> bool:
         logger.info("Stay_there (no action) during wait")
-        self.device.release_during_wait()
+        # 如果device还未初始化，不需要release_during_wait
+        if has_cached_property(self, 'device'):
+            self.device.release_during_wait()
         return self.wait_until(next_run)
 
     def _is_cached_device_online(self) -> bool:
@@ -581,11 +598,6 @@ class Script:
 
             # Get task
             task = self.get_next_task()
-            # 若缓存device对应的模拟器已离线，先清缓存，再让device重建（重建时会走emulator_start前检查）
-            if has_cached_property(self, 'device') and not self._is_cached_device_online():
-                logger.warning('检测到缓存device离线，清理缓存并重建设备')
-                del_cached_property(self, 'device')
-            _ = self.device
             # Skip first restart
             if self.is_first_task and task == 'Restart':
                 logger.info('Skip task `Restart` at scheduler start')
@@ -595,6 +607,12 @@ class Script:
 
             # Run
             logger.info(f'Scheduler: Start task `{task}`')
+            # 在执行任务前确保device可用（此时才触发Device.__init__和可能的emulator_start）
+            # 若缓存device对应的模拟器已离线，先清缓存，再让device重建（重建时会走emulator_start前检查）
+            if has_cached_property(self, 'device') and not self._is_cached_device_online():
+                logger.warning('检测到缓存device离线，清理缓存并重建设备')
+                del_cached_property(self, 'device')
+            _ = self.device  # 确保device已初始化
             self.device.stuck_record_clear()
             self.device.click_record_clear()
             logger.hr(task, level=0)
