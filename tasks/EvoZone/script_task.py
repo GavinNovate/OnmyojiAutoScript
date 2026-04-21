@@ -31,19 +31,6 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
                                                seconds=limit_time.second)
         con = self.config.evo_zone
 
-        # 检查协战次数限制（在御魂切换之前，如果协战次数为0则直接跳过）
-        if con.evo_zone_config.limit_by_friend_battle:
-            logger.info('已启用协战次数限制')
-            friend_count = self.check_friend_battle_count()
-            if friend_count == 0:
-                logger.info('当前协战次数为0，跳过任务')
-                self.set_next_run('EvoZone', finish=True, success=True)
-                raise TaskEnd
-            else:
-                # 将协战次数作为运行次数限制
-                self.limit_count = min(self.limit_count, friend_count)
-                logger.info('将运行次数限制调整为: %d', self.limit_count)
-
         if con.switch_soul_config.enable:
             self.ui_get_current_page()
             self.ui_goto(page_shikigami_records)
@@ -55,6 +42,26 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
 
         self.ui_get_current_page()
         self.ui_goto(page_main)
+
+        # 检查协战次数限制（在进入主页之后，模拟器已启动）
+        if con.evo_zone_config.limit_by_friend_battle:
+            logger.info('已启用协战次数限制')
+            friend_count, check_success = self.check_friend_battle_count()
+            if friend_count == 0:
+                if check_success:
+                    # 真实的协战次数为0，标记为成功并跳过
+                    logger.info('当前协战次数为0，跳过任务')
+                    self.set_next_run('EvoZone', finish=True, success=True)
+                    raise TaskEnd
+                else:
+                    # 协战次数识别失败，标记为失败
+                    logger.warning('协战次数识别失败，任务执行失败')
+                    self.set_next_run('EvoZone', finish=True, success=False)
+                    raise TaskEnd
+            else:
+                # 将协战次数作为运行次数限制
+                self.limit_count = min(self.limit_count, friend_count)
+                logger.info('将运行次数限制调整为: %d', self.limit_count)
         config: EvoZone = self.config.evo_zone
         if config.evo_zone_config.soul_buff_enable:
             self.open_buff()
@@ -352,10 +359,10 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
         logger.error('Wild mode is not implemented')
         pass
 
-    def check_friend_battle_count(self) -> int:
+    def check_friend_battle_count(self) -> tuple[int, bool]:
         """
         检测当前可用的协战次数
-        :return: 可用协战次数，如果检测失败返回0
+        :return: (可用协战次数, 是否识别成功)，如果检测失败返回(0, False)
         """
         logger.info('开始检测协战次数')
         
@@ -376,14 +383,14 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
                 sleep(1)  # 等待界面加载
                 
                 # OCR识别协战次数
-                friend_count = self.ocr_friend_battle_count()
-                logger.info('检测到的协战次数: %d', friend_count)
+                friend_count, success = self.ocr_friend_battle_count()
+                logger.info('检测到的协战次数: %d, 识别成功: %s', friend_count, success)
                 
                 # 返回主页
                 logger.info('返回主页')
                 self.ui_goto(page_main)
                 
-                return friend_count
+                return friend_count, success
             else:
                 logger.warning('未找到协战按钮')
                 
@@ -391,18 +398,18 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
             logger.error('检测协战次数失败: %s', str(e))
         
         # 检测失败，确保返回主页
-        logger.warning('协战次数检测失败，返回默认值 0')
+        logger.warning('协战次数检测失败，返回默认值 (0, False)')
         try:
             self.ui_get_current_page()
             self.ui_goto(page_main)
         except Exception:
             pass
-        return 0
+        return 0, False
 
-    def ocr_friend_battle_count(self) -> int:
+    def ocr_friend_battle_count(self) -> tuple[int, bool]:
         """
         OCR识别协战次数
-        :return: 协战次数，识别失败返回0
+        :return: (协战次数, 是否识别成功)，识别失败返回(0, False)
         """
         logger.info('开始OCR识别协战次数')
         max_retry = 3
@@ -423,7 +430,7 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
                     # 验证数值是否在合理范围内
                     if 0 <= used_count <= 15 and 0 <= available_count <= 15 and total_count == 15:
                         logger.info('已使用协战次数: %d, 剩余可用: %d, 总计: %d', used_count, available_count, total_count)
-                        return available_count
+                        return available_count, True
                     else:
                         logger.warning('协战次数超出合理范围: used=%d, available=%d, total=%d', used_count, available_count, total_count)
                 else:
@@ -439,7 +446,7 @@ class ScriptTask(GeneralBattle, GeneralInvite, GeneralBuff, GeneralRoom, GameUi,
                     sleep(1)
 
         logger.warning('OCR识别协战次数失败，已重试%d次', max_retry)
-        return 0
+        return 0, False
 
 if __name__ == '__main__':
     from module.config.config import Config
