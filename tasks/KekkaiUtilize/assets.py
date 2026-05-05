@@ -151,6 +151,8 @@ class KekkaiUtilizeAssets:
 	O_BOX_EXP = RuleOcr(roi=(430,540,420,40), area=(430,540,420,40), mode="DigitCounter", method="Default", keyword="", name="box_exp")
 	# 斗鱼或太古寄养数目 
 	O_CARD_NUM = RuleOcr(roi=(800,421,150,33), area=(800,421,150,33), mode="Single", method="Default", keyword="", name="card_num")
+	# 好友列表锚点玩家名（用于判断滚动是否到底）
+	O_U_PLAYER_NAME = RuleOcr(roi=(312,200,130,68), area=(312,200,130,68), mode="Single", method="Default", keyword="", name="u_player_name")
 
 
 	# Swipe Rule Assets

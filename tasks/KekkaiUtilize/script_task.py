@@ -623,6 +623,15 @@ class ScriptTask(GameUi, ReplaceShikigami, KekkaiUtilizeAssets):
                 self.ap_max_num, self.jade_max_num = 0, 0
                 return False
 
+    @staticmethod
+    def _normalize_player_name(name_text: str) -> str:
+        """玩家名归一化：去空格并移除特殊符号，降低OCR抖动影响"""
+        if not name_text:
+            return ''
+        normalized = re.sub(r'\s+', '', str(name_text))
+        normalized = re.sub(r'[^\u4e00-\u9fffA-Za-z0-9]', '', normalized)
+        return normalized.lower()
+
     def _current_select_best(self, best_card_type=None, best_card_num=0, selected_card=False):
         """结界卡选择核心逻辑（集成版）
         功能：滑动屏幕寻找最优资源卡，支持两种模式：
@@ -647,6 +656,8 @@ class ScriptTask(GameUi, ReplaceShikigami, KekkaiUtilizeAssets):
         logger.info(f'启动{"探索模式" if not selected_card else f"确认模式 | 目标: {best_card_type} @ {best_card_num}"}')
         timer = Timer(TIMEOUT).start()
         miss_count = 0  # 连续无卡计数器
+        last_anchor_name = ''  # 上一轮锚点玩家名
+        same_anchor_count = 0  # 连续相同锚点计数
 
         # ============== 主滑动循环 ==============#
         for swipe_count in range(MAX_SWIPES + 1):
@@ -672,6 +683,20 @@ class ScriptTask(GameUi, ReplaceShikigami, KekkaiUtilizeAssets):
                 continue
 
             miss_count = 0  # 重置无卡计数器
+
+            # ------ 步骤1.1: 判断是否已经到底（锚点玩家名OCR） ------#
+            anchor_raw_name = self.O_U_PLAYER_NAME.ocr(self.device.image)
+            anchor_name = self._normalize_player_name(anchor_raw_name)
+            if anchor_name:
+                if last_anchor_name and anchor_name == last_anchor_name:
+                    same_anchor_count += 1
+                    logger.info(f'列表锚点玩家名未变化: {anchor_name} | 连续{same_anchor_count}次')
+                    if same_anchor_count >= 2:
+                        logger.warning(f'锚点玩家名连续{same_anchor_count}次不变，判定列表已到底')
+                        return None
+                else:
+                    same_anchor_count = 0
+                last_anchor_name = anchor_name
 
             # ------ 步骤2: 处理识别到的结界卡 ------
             cards_list = [target for target, _, _ in cards]
