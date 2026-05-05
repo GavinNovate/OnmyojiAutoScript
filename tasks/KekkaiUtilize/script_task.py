@@ -112,18 +112,22 @@ class ScriptTask(GameUi, ReplaceShikigami, KekkaiUtilizeAssets):
         :return:
         """
         self.realm_goto_grown()
-        if self.appear(self.I_RS_LEVEL_MAX):
-            # 存在满级的式神
-            logger.info('Exist max level shikigami and replace it')
-            self.unset_shikigami_max_lv()
-            self.switch_shikigami_class(shikigami_class)
-            self.set_shikigami(shikigami_order=7, stop_image=self.I_RS_NO_ADD)
+        if self.config.kekkai_utilize.utilize_config.smart_exchange:
+            logger.info('Using smart exchange')
+            self.smart_exchange()
         else:
-            logger.info('No max level shikigami')
-        if self.detect_no_shikigami():
-            logger.warning('There are no any shikigami grow room')
-            self.switch_shikigami_class(shikigami_class)
-            self.set_shikigami(shikigami_order=7, stop_image=self.I_RS_NO_ADD)
+            if self.appear(self.I_RS_LEVEL_MAX):
+                # 存在满级的式神
+                logger.info('Exist max level shikigami and replace it')
+                self.unset_shikigami_max_lv()
+                self.switch_shikigami_class(shikigami_class)
+                self.set_shikigami(shikigami_order=7, stop_image=self.I_RS_NO_ADD)
+            else:
+                logger.info('No max level shikigami')
+            if self.detect_no_shikigami():
+                logger.warning('There are no any shikigami grow room')
+                self.switch_shikigami_class(shikigami_class)
+                self.set_shikigami(shikigami_order=7, stop_image=self.I_RS_NO_ADD)
 
         # 回到结界界面
         while 1:

@@ -21,6 +21,19 @@ class ReplaceShikigami(BaseTask, ReplaceShikigamiAssets):
             self.screenshot()
         return self.appear(self.I_RS_RECORDS_SHIKI, interval=0.5)
 
+    def smart_exchange(self, screenshot=False) -> bool:
+        """
+        检测并点击智能放入按钮
+        :return: 是否成功点击了智能放入按钮
+        """
+        if screenshot:
+            self.screenshot()
+        if self.appear(self.I_RS_SMART_EXCHANGE):
+            if self.appear_then_click(self.I_RS_SMART_EXCHANGE):
+                logger.info('Click smart exchange')
+                return True
+        return False
+
     def switch_shikigami_class(self, shikigami_class: ShikigamiClass = ShikigamiClass.N):
         """
         要求在式神育成的界面

@@ -35,6 +35,7 @@ class UtilizeConfig(BaseModel):
     utilize_rule: UtilizeRule = Field(default=UtilizeRule.DEFAULT, description='utilize_rule_help')
     value_calculation_rule: ValueCalculationRule = Field(default=ValueCalculationRule.DEFAULT, description='价值计算规则，默认按档位选；taiko_priority：太鼓优先(太鼓系数2.2)，fish_priority：斗鱼优先(太鼓系数1.8)')
     select_friend_list: SelectFriendList = Field(default=SelectFriendList.SAME_SERVER, description='select_friend_list_help')
+    smart_exchange: bool = Field(default=True, description='使用式神育成界面的智能放入')
     shikigami_class: ShikigamiClass = Field(default=ShikigamiClass.N, description='shikigami_class_help')
     shikigami_order: int = Field(default=4, description='shikigami_order_help')
     harvest_guild_max_times: int = Field(default=3, description='收取寮资金或体力失败的最大尝试次数')
