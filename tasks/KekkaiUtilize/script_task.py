@@ -640,7 +640,7 @@ class ScriptTask(GameUi, ReplaceShikigami, KekkaiUtilizeAssets):
             '太鼓': {'max': 76, 'record_attr': 'jade_max_num'}
         }
         MAX_SWIPES = 20  # 最大滑动次数
-        CONSEC_MISS = self.config.utilize_config.consecutive_miss_threshold  # 允许连续无卡次数（从配置读取）
+        CONSEC_MISS = self.config.kekkai_utilize.utilize_config.consecutive_miss_threshold  # 允许连续无卡次数（从配置读取）
         TIMEOUT = 120  # 操作超时(秒)
 
         # ============== 初始化阶段 ==============#
