@@ -69,7 +69,7 @@ class GeneralBattle(GeneralBuff, GeneralBattleAssets):
                         self.check_and_open_buff(buff)
                         confed = True
                 # 点击准备(锁定阵容自动点准备,不锁定阵容前面也已经配置完毕需要点准备)
-                if self.appear_then_click(self.I_PREPARE_HIGHLIGHT, interval=0.8):
+                if self.appear_then_click(self.I_PREPARE_HIGHLIGHT, interval=0.7):
                     continue
                 continue
             # 未知界面, 既不是准备界面也不是战斗界面
