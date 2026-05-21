@@ -88,5 +88,14 @@
     "method": "Template matching",
     "threshold": 0.8,
     "description": "description"
+  },
+  {
+    "itemName": "guhuoniao",
+    "imageName": "gg_guhuoniao.png",
+    "roiFront": "600,250,60,50",
+    "roiBack": "600,250,60,50",
+    "method": "Template matching",
+    "threshold": 0.8,
+    "description": "姑获鸟道具掉落弹窗"
   }
 ]

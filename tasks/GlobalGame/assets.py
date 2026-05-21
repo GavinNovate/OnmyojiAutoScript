@@ -31,11 +31,15 @@ class GlobalGameAssets:
 	I_CLIENT_CLEAR = RuleImage(roi_front=(578,369,151,72), roi_back=(578,369,151,72), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_client_clear.png")
 	# description 
 	I_CHAT_CLOSE_BUTTON = RuleImage(roi_front=(632,343,49,103), roi_back=(632,343,49,103), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_chat_close_button.png")
+	# 姑获鸟道具掉落弹窗 
+	I_GUHUONIAO = RuleImage(roi_front=(600,250,60,50), roi_back=(600,250,60,50), threshold=0.8, method="Template matching", file="./tasks/GlobalGame/gg/gg_guhuoniao.png")
 
 
 	# Click Rule Assets
 	# description 
 	C_UI_REWARD = RuleClick(roi_front=(919,160,208,368), roi_back=(72,107,244,503), name="ui_reward")
+	# 姑获鸟道具掉落点击区域 
+	C_GUHUONIAO = RuleClick(roi_front=(540,200,180,150), roi_back=(540,200,180,150), name="guhuoniao_click")
 
 
 	# Image Rule Assets

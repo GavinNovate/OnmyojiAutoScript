@@ -67,6 +67,21 @@ class BaseTask(GlobalGameAssets, CostumeBase):
         :return: 没有出现返回False, 其他True
         """
         image = self.device.image
+
+        # 姑获鸟道具掉落检测
+        if self.appear(self.I_GUHUONIAO):
+            logger.info('Guhuoniao drop appearing')
+            for _ in range(3):
+                self.device.screenshot()
+                if not self.appear(self.I_GUHUONIAO):
+                    logger.info('Deal with guhuoniao done')
+                    break
+                if self.appear_then_click(self.I_GUHUONIAO, action=self.C_GUHUONIAO, interval=1.0):
+                    sleep(1)
+                    continue
+                sleep(1)
+            return True
+
         appear_invitation = self.appear(self.I_G_ACCEPT)
         if not appear_invitation:
             return False
